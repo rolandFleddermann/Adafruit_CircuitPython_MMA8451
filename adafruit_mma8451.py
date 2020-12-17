@@ -20,10 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 """
-`adafruit_mma8451`
+`mma8451`
 ====================================================
 
-CircuitPython module for the MMA8451 3 axis accelerometer.  See
+Micropython module for the MMA8451 3 axis accelerometer.  See
 examples/simpletest.py for a demo of the usage.
 
 * Author(s): Tony DiCola
@@ -39,7 +39,7 @@ import adafruit_bus_device.i2c_device as i2c_device
 
 
 __version__ = "0.0.0-auto.0"
-__repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_MMA8451.git"
+#__repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_MMA8451.git"
 
 
 # Internal constants:
@@ -78,7 +78,6 @@ DATARATE_12_5HZ = 0b101  # 12.5Hz
 DATARATE_6_25HZ = 0b110  # 6.25Hz
 DATARATE_1_56HZ = 0b111  # 1.56Hz
 
-
 class MMA8451:
     """MMA8451 accelerometer.  Create an instance by specifying:
     - i2c: The I2C bus connected to the sensor.
@@ -92,7 +91,7 @@ class MMA8451:
     _BUFFER = bytearray(6)
 
     def __init__(self, i2c, *, address=_MMA8451_DEFAULT_ADDRESS):
-        self._device = i2c_device.I2CDevice(i2c, address)
+        self._device = (i2c, address)
         # Verify device ID.
         if self._read_u8(_MMA8451_REG_WHOAMI) != 0x1A:
             raise RuntimeError("Failed to find MMA8451, check wiring!")
@@ -120,11 +119,17 @@ class MMA8451:
         # has at least 1 value.  I don't trust the implicit true/false
         # recommendation as it was not designed for bytearrays which may not
         # follow that semantic.  Ignore pylint's superfulous complaint.
+        (i2c,addr) = self._device
         assert len(buf) > 0  # pylint: disable=len-as-condition
         if count is None:
             count = len(buf)
-        with self._device as i2c:
-            i2c.write_then_readinto(bytes([address & 0xFF]), buf, in_end=count)
+        if count<len(buf):
+            b2 = bytes(count)
+            i2c.readfrom_mem_into(addr,bytes([address & 0xFF]), b2)
+            for ind in range(count):
+                buf[ind]=b2[ind]
+        else:
+            i2c.readfrom_mem_into(addr,bytes([address & 0xFF]), buf)
 
     def _read_u8(self, address):
         # Read an 8-bit unsigned value from the specified 8-bit address.
@@ -133,10 +138,8 @@ class MMA8451:
 
     def _write_u8(self, address, val):
         # Write an 8-bit unsigned value to the specified 8-bit address.
-        with self._device as i2c:
-            self._BUFFER[0] = address & 0xFF
-            self._BUFFER[1] = val & 0xFF
-            i2c.write(self._BUFFER, end=2)
+        (i2c,addr) = self._device
+        i2c.writeto_mem(addr,address & 0xFF,val & 0xFF)
 
     @property
     def range(self):
