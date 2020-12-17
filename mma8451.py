@@ -35,9 +35,6 @@ except ImportError:
 
 from micropython import const
 
-import adafruit_bus_device.i2c_device as i2c_device
-
-
 __version__ = "0.0.0-auto.0"
 #__repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_MMA8451.git"
 
