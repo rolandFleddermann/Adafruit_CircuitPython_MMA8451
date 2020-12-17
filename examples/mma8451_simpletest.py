@@ -1,35 +1,33 @@
 # Simple demo of reading the MMA8451 orientation every second.
 # Author: Tony DiCola
 import time
+from machine import I2C, Pin
 
-import board
-import busio
-
-import adafruit_mma8451
+import mma8451
 
 
 # Initialize I2C bus.
-i2c = busio.I2C(board.SCL, board.SDA)
+i2c = I2C(0, scl=Pin(18), sda=Pin(19), freq=400000)
 
 # Initialize MMA8451 module.
-sensor = adafruit_mma8451.MMA8451(i2c)
+sensor = mma8451.MMA8451(i2c)
 # Optionally change the address if it's not the default:
-# sensor = adafruit_mma8451.MMA8451(i2c, address=0x1C)
+# sensor = mma8451.MMA8451(i2c, address=0x1C)
 
 # Optionally change the range from its default of +/-4G:
-# sensor.range = adafruit_mma8451.RANGE_2G  # +/- 2G
-# sensor.range = adafruit_mma8451.RANGE_4G  # +/- 4G (default)
-# sensor.range = adafruit_mma8451.RANGE_8G  # +/- 8G
+# sensor.range = mma8451.RANGE_2G  # +/- 2G
+# sensor.range = mma8451.RANGE_4G  # +/- 4G (default)
+# sensor.range = mma8451.RANGE_8G  # +/- 8G
 
 # Optionally change the data rate from its default of 800hz:
-# sensor.data_rate = adafruit_mma8451.DATARATE_800HZ  #  800Hz (default)
-# sensor.data_rate = adafruit_mma8451.DATARATE_400HZ  #  400Hz
-# sensor.data_rate = adafruit_mma8451.DATARATE_200HZ  #  200Hz
-# sensor.data_rate = adafruit_mma8451.DATARATE_100HZ  #  100Hz
-# sensor.data_rate = adafruit_mma8451.DATARATE_50HZ   #   50Hz
-# sensor.data_rate = adafruit_mma8451.DATARATE_12_5HZ # 12.5Hz
-# sensor.data_rate = adafruit_mma8451.DATARATE_6_25HZ # 6.25Hz
-# sensor.data_rate = adafruit_mma8451.DATARATE_1_56HZ # 1.56Hz
+# sensor.data_rate = mma8451.DATARATE_800HZ  #  800Hz (default)
+# sensor.data_rate = mma8451.DATARATE_400HZ  #  400Hz
+# sensor.data_rate = mma8451.DATARATE_200HZ  #  200Hz
+# sensor.data_rate = mma8451.DATARATE_100HZ  #  100Hz
+# sensor.data_rate = mma8451.DATARATE_50HZ   #   50Hz
+# sensor.data_rate = mma8451.DATARATE_12_5HZ # 12.5Hz
+# sensor.data_rate = mma8451.DATARATE_6_25HZ # 6.25Hz
+# sensor.data_rate = mma8451.DATARATE_1_56HZ # 1.56Hz
 
 # Main loop to print the acceleration and orientation every second.
 while True:
@@ -48,20 +46,20 @@ while True:
     #  - PL_LLF: Landscape, left, front
     #  - PL_LLB: Landscape, left, back
     print("Orientation: ", end="")
-    if orientation == adafruit_mma8451.PL_PUF:
+    if orientation == mma8451.PL_PUF:
         print("Portrait, up, front")
-    elif orientation == adafruit_mma8451.PL_PUB:
+    elif orientation == mma8451.PL_PUB:
         print("Portrait, up, back")
-    elif orientation == adafruit_mma8451.PL_PDF:
+    elif orientation == mma8451.PL_PDF:
         print("Portrait, down, front")
-    elif orientation == adafruit_mma8451.PL_PDB:
+    elif orientation == mma8451.PL_PDB:
         print("Portrait, down, back")
-    elif orientation == adafruit_mma8451.PL_LRF:
+    elif orientation == mma8451.PL_LRF:
         print("Landscape, right, front")
-    elif orientation == adafruit_mma8451.PL_LRB:
+    elif orientation == mma8451.PL_LRB:
         print("Landscape, right, back")
-    elif orientation == adafruit_mma8451.PL_LLF:
+    elif orientation == mma8451.PL_LLF:
         print("Landscape, left, front")
-    elif orientation == adafruit_mma8451.PL_LLB:
+    elif orientation == mma8451.PL_LLB:
         print("Landscape, left, back")
     time.sleep(1.0)
