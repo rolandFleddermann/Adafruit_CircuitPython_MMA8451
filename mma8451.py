@@ -90,8 +90,9 @@ class MMA8451:
     def __init__(self, i2c, *, address=_MMA8451_DEFAULT_ADDRESS):
         self._device = (i2c, address)
         # Verify device ID.
-        if self._read_u8(_MMA8451_REG_WHOAMI) != 0x1A:
-            raise RuntimeError("Failed to find MMA8451, check wiring!")
+        dev_id = self._read_u8(_MMA8451_REG_WHOAMI)
+        if not (dev_id == 0x1A or dev_id == 0x2A or dev_id == 0x3A): #8451/2/3 respectively
+            raise RuntimeError("Failed to find MMA845X, check wiring!")
         # Reset and wait for chip to be ready.
         self._write_u8(_MMA8451_REG_CTRL_REG2, 0x40)
         while self._read_u8(_MMA8451_REG_CTRL_REG2) & 0x40 > 0:
@@ -121,22 +122,22 @@ class MMA8451:
         if count is None:
             count = len(buf)
         if count<len(buf):
-            b2 = bytes(count)
-            i2c.readfrom_mem_into(addr,bytes([address & 0xFF]), b2)
+            buf2 = bytearray(count)
+            i2c.readfrom_mem_into(addr,address&0xFF, buf2)
             for ind in range(count):
-                buf[ind]=b2[ind]
+                buf[ind]=buf2[ind]
         else:
-            i2c.readfrom_mem_into(addr,bytes([address & 0xFF]), buf)
+            i2c.readfrom_mem_into(addr,address&0xFF, buf)
 
     def _read_u8(self, address):
         # Read an 8-bit unsigned value from the specified 8-bit address.
-        self._read_into(address, self._BUFFER, count=1)
-        return self._BUFFER[0]
+        (i2c,addr) = self._device
+        return i2c.readfrom_mem(addr,address,1)[0]
 
     def _write_u8(self, address, val):
         # Write an 8-bit unsigned value to the specified 8-bit address.
         (i2c,addr) = self._device
-        i2c.writeto_mem(addr,address & 0xFF,val & 0xFF)
+        i2c.writeto_mem(addr,address&0xFF,bytes([val]))
 
     @property
     def range(self):
