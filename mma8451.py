@@ -140,6 +140,25 @@ class MMA8451:
         i2c.writeto_mem(addr,address&0xFF,bytes([val]))
 
     @property
+    def HPF(self):
+        """Get and set the HPF output status of the sensor.  Must be a value of: True/False
+        """
+        return self._read_u8(_MMA8451_REG_XYZ_DATA_CFG) & 0x10
+
+    @HPF.setter
+    def HPF(self, enable):
+        reg1 = self._read_u8(_MMA8451_REG_CTRL_REG1)
+        reg_data_cfg = self._read_u8(_MMA8451_REG_XYZ_DATA_CFG)
+        if enable:
+            reg_data_cfg |= 0x10
+        else:
+            reg_data_cfg &= ~0x10
+        self._write_u8(_MMA8451_REG_CTRL_REG1, 0x00)  # deactivate
+        self._write_u8(_MMA8451_REG_XYZ_DATA_CFG, reg_data_cfg)
+        self._write_u8(_MMA8451_REG_CTRL_REG1, reg1 | 0x01)  # activate
+
+
+    @property
     def range(self):
         """Get and set the range of the sensor.  Must be a value of:
          - RANGE_8G: +/- 8g
@@ -152,8 +171,9 @@ class MMA8451:
     def range(self, val):
         assert 0 <= val <= 2
         reg1 = self._read_u8(_MMA8451_REG_CTRL_REG1)
+        reg_data_cfg = self._read_u8(_MMA8451_REG_XYZ_DATA_CFG) & ~0x03 # clear prev val
         self._write_u8(_MMA8451_REG_CTRL_REG1, 0x00)  # deactivate
-        self._write_u8(_MMA8451_REG_XYZ_DATA_CFG, val)
+        self._write_u8(_MMA8451_REG_XYZ_DATA_CFG, reg_data_cfg | val)
         self._write_u8(_MMA8451_REG_CTRL_REG1, reg1 | 0x01)  # activate
 
     @property
